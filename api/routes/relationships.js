@@ -1,8 +1,11 @@
 import Express from "express";
-import {  } from "../controllers/post.js";
+import { getRelationships, addRelationship, deleteRelationship } from "../controllers/relationship.js";
 
 const router = Express.Router();
 
-router.get("", );
+router.get("/", getRelationships);
+router.post("/", addRelationship);
+router.delete("/", deleteRelationship);
+
 
 export default router;
