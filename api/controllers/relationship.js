@@ -1,51 +1,49 @@
 import { db } from "../connect.js";
 import jwt  from "jsonwebtoken";
 
-export const getRelationships = (req, res) => {
+export const getRelationships = (req,res)=>{
+    const q = "SELECT followerUserId FROM relationships WHERE followedUserId = ?";
 
-        const q = "SELECT followerUserId FROM relationships WHERE followerUserId = ?";
-      
-        db.query(q, [req.query.followerUserId], (err,data)=>{
-            if(err) return res.status(500).json(err);
-            res.status(200).json(data.map(relationship => relationship.userId));
-        });
-   };
+    db.query(q, [req.query.followedUserId], (err, data) => {
+      if (err) return res.status(500).json(err);
+      return res.status(200).json(data.map(relationship=>relationship.followerUserId));
+    });
+}
 
-   export const addRelationship = (req, res) => {
+export const addRelationship = (req, res) => {
     const token = req.cookies.accessToken;
-    if(!token) return res.status(401).json("Not logged in!");
-    
-    jwt.verify(token, "secretKey", (err, userInfo) => {
-    if(err) return res.status(403).json("Token is not valid");
-
-    const q = "INSERT INTO likes(`userId`, `postId`) VALUES (?)";
-    
-    const values = [
+    if (!token) return res.status(401).json("Not logged in!");
+  
+    jwt.verify(token, "secretkey", (err, userInfo) => {
+      if (err) return res.status(403).json("Token is not valid!");
+  
+      const q = "INSERT INTO relationships (`followerUserId`,`followedUserId`) VALUES (?)";
+      const values = [
         userInfo.id,
-        req.body.postId
-    ];
-    
-    db.query(q, [values], (err,data)=>{
-        if(err) return res.status(500).json(err);
-        res.status(200).json("Like has been liked");
+        req.body.userId
+      ];
+  
+      db.query(q, [values], (err, data) => {
+        if (err) return res.status(500).json(err);
+        return res.status(200).json("Following");
+      });
     });
-});
-};
+  };
 
-export const deleteRelationship = (req, res) => {
+  export const deleteRelationship = (req, res) => {
+
     const token = req.cookies.accessToken;
-    if(!token) return res.status(401).json("Not logged in!");
-    
-    jwt.verify(token, "secretKey", (err, userInfo) => {
-    if(err) return res.status(403).json("Token is not valid");
-
-    const q = "DELETE FROM likes WHERE `userId` = ? AND `postId` = ?";
-    
-    db.query(q, [userInfo.id, req.query.postId], (err,data)=>{
-        if(err) return res.status(500).json(err);
-        res.status(200).json("Like has been removed");
+    if (!token) return res.status(401).json("Not logged in!");
+  
+    jwt.verify(token, "secretkey", (err, userInfo) => {
+      if (err) return res.status(403).json("Token is not valid!");
+  
+      const q = "DELETE FROM relationships WHERE `followerUserId` = ? AND `followedUserId` = ?";
+  
+      db.query(q, [userInfo.id, req.query.userId], (err, data) => {
+        if (err) return res.status(500).json(err);
+        return res.status(200).json("Unfollow");
+      });
     });
-});
-};
-
+  };
 
